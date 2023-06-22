@@ -1,16 +1,37 @@
-const Index: React.FC = () => {
+import {useEffect, useState} from 'react';
+import {io, Socket} from 'socket.io-client';
+const SERVER_URL: string = process.env.NEXT_PUBLIC_SERVER_URL || '';
+
+const Home = () => {
+  const [socket, setSocket] = useState<Socket>();
+
+  useEffect(() => {
+    const newSocket = io(SERVER_URL, {});
+    setSocket(newSocket);
+
+    return () => {
+      newSocket.close();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!socket) return;
+
+    socket.on('connect', () => {
+      console.log('Connected to server');
+    });
+
+    socket.on('disconnect', () => {
+      console.log('Disconnected from server');
+    });
+  }, [socket]);
+
   return (
-    <div className='flex items-center justify-center h-screen'>
-      <div className='bg-gray-200 p-8 rounded shadow'>
-        <h3 className='text-4xl text-center text-gray-800 font-bold mb-4'>
-          Let there be light
-        </h3>
-        <p className='text-xl text-center text-gray-600'>
-          epic chatbot loading...
-        </p>
-      </div>
+    <div>
+      <h1>socket connection has been established!</h1>
+      <h2>We're officially connected 🎉</h2>
     </div>
   );
 };
 
-export default Index;
+export default Home;
