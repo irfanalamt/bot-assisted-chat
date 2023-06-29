@@ -10,20 +10,17 @@ const Index: React.FC = () => {
           <div className='font-bold text-xl mb-2 text-center'>
             Welcome to BCX Chat
           </div>
-          <p className='text-gray-700 text-base text-center'>
-            Please select your role to proceed.
-          </p>
         </div>
         <div className='px-6 pt-4 pb-2'>
           <button
             onClick={() => router.push('/agent/login')}
-            className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 mb-4 rounded w-full transition duration-200'>
+            className='bg-blue-600 hover:bg-blue-700 text-white font-bold p-3 mb-4 rounded w-full transition duration-200'>
             Login as Agent
           </button>
           <button
             onClick={() => router.push('/user/login')}
-            className='bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded w-full transition duration-200'>
-            Login as User
+            className='bg-green-600 hover:bg-green-700 text-white font-bold p-3 rounded w-full transition duration-200'>
+            Chat Now
           </button>
         </div>
       </div>
