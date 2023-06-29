@@ -1,5 +1,7 @@
 import React, {useEffect, useRef, useState} from 'react';
 import {Socket} from 'socket.io-client';
+import OnlineStatus from './OnlineStatus';
+import useSocket from '@/hooks/useSocket';
 
 interface Message {
   type: string;
@@ -15,9 +17,10 @@ const ChatBox: React.FC<ChatBoxProps> = ({socket, userName, agentName}) => {
   const [messages, setMessages] = useState<Message[]>([{type: '', text: ''}]);
   const [inputValue, setInputValue] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const {isOnline} = useSocket(socket);
 
   useEffect(() => {
-    socket.on('chatMessage', (message: string) => {
+    socket.on('chat_message', (message: string) => {
       setMessages((prevMessages) => [
         ...prevMessages,
         {
@@ -30,13 +33,14 @@ const ChatBox: React.FC<ChatBoxProps> = ({socket, userName, agentName}) => {
     return () => {
       socket.disconnect();
     };
-  }, []);
+  }, [socket]);
 
   useEffect(() => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({behavior: 'smooth'});
     }
   }, [messages]);
+
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setInputValue(event.target.value);
   };
@@ -54,8 +58,13 @@ const ChatBox: React.FC<ChatBoxProps> = ({socket, userName, agentName}) => {
     ]);
     setInputValue('');
   };
+
   return (
     <>
+      <div className='flex justify-end w-full max-w-lg pb-1 pr-1'>
+        <OnlineStatus isOnline={isOnline} />
+      </div>
+
       <div className='flex flex-col space-y-4 max-w-lg w-full h-full bg-white shadow-lg rounded-lg p-6 overflow-auto mb-6'>
         {messages.map(
           (message, index) =>
