@@ -18,7 +18,7 @@ const Index: React.FC = () => {
             Login as Agent
           </button>
           <button
-            onClick={() => router.push('/user/login')}
+            onClick={() => router.push('/user/home')}
             className='bg-green-600 hover:bg-green-700 text-white font-bold p-3 rounded w-full transition duration-200'>
             Chat Now
           </button>

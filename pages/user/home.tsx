@@ -1,0 +1,123 @@
+import React, {useEffect, useState, ChangeEvent, FormEvent} from 'react';
+import {Socket, io} from 'socket.io-client';
+import ChatBox from '@/components/ChatBox';
+import Snackbar from '@/components/Snackbar';
+import useSnackbar from '@/hooks/useSnackbar';
+
+const Home: React.FC = () => {
+  const [userInfo, setUserInfo] = useState({name: '', email: ''});
+  const [showChat, setShowChat] = useState(false);
+  const [socket, setSocket] = useState<Socket | null>(null);
+  const {isSnackbarVisible, snackbarMessage, snackbarType, showSnackbar} =
+    useSnackbar();
+
+  const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const {name, value} = event.target;
+    setUserInfo((prevState) => ({...prevState, [name]: value}));
+  };
+
+  const isFormValid = (): boolean => {
+    const {name, email} = userInfo;
+
+    if (!name || !email) {
+      showSnackbar('Both name and email fields are required.', 'error');
+      return false;
+    }
+
+    if (!process.env.NEXT_PUBLIC_SERVER_URL) {
+      showSnackbar('Server URL is not defined.', 'error');
+      return false;
+    }
+
+    return true;
+  };
+
+  const handleSubmit = async (event: FormEvent) => {
+    event.preventDefault();
+
+    if (!isFormValid()) return;
+
+    try {
+      const newSocket = io(process.env.NEXT_PUBLIC_SERVER_URL!, {
+        query: userInfo,
+      });
+
+      setSocket(newSocket);
+    } catch (error) {
+      showSnackbar('Failed to initialize socket connection.', 'error');
+      console.error('Socket initialization error:', error);
+    }
+  };
+
+  useEffect(() => {
+    if (!socket) return;
+
+    socket.on('connect', () => {
+      setShowChat(true);
+    });
+
+    socket.on('connect_error', (error) => {
+      showSnackbar('Socket connection error occurred.', 'error');
+      console.error('Socket connection error:', error);
+    });
+
+    return () => {
+      socket.off('connect');
+      socket.off('connect_error');
+    };
+  }, [socket]);
+
+  const {name, email} = userInfo;
+
+  return showChat ? (
+    <div className='flex flex-col h-screen justify-between items-center bg-gray-200 px-6 py-6'>
+      <h4 className='text-2xl text-center text-gray-800 font-bold mb-4'>
+        BCX Chat
+      </h4>
+      {socket && (
+        <ChatBox socket={socket} userName={name} agentName={'Bot 1'} />
+      )}
+    </div>
+  ) : (
+    <div className='flex flex-col h-screen items-center bg-gray-200 px-2 pt-40'>
+      <h1 className='text-3xl text-center text-gray-600 font-bold my-6'>
+        BCX Chat
+      </h1>
+      <div className=''>
+        <div className='text-xl text-center text-gray-800 font-bold mb-4'>
+          User Info
+        </div>
+        <form
+          onSubmit={handleSubmit}
+          className='bg-white rounded-lg shadow-md px-8 py-8 max-w-md space-y-4'>
+          <input
+            type='text'
+            name='name'
+            value={name}
+            onChange={handleChange}
+            className='w-full border-2 border-gray-300 p-3 rounded outline-none focus:border-indigo-500'
+            placeholder='Name'
+          />
+          <input
+            type='email'
+            name='email'
+            value={email}
+            onChange={handleChange}
+            className='w-full border-2 border-gray-300 p-3 rounded outline-none focus:border-indigo-500'
+            placeholder='Email'
+          />
+          <button
+            type='submit'
+            className='w-full bg-indigo-500 text-white font-semibold p-3 rounded hover:bg-green-600 transition ease-in-out duration-200'>
+            Start Chat
+          </button>
+        </form>
+      </div>
+      {isSnackbarVisible && (
+        <Snackbar message={snackbarMessage} messageType={snackbarType} />
+      )}
+    </div>
+  );
+};
+
+export default Home;
