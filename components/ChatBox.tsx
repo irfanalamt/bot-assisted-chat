@@ -48,7 +48,7 @@ const ChatBox: React.FC<ChatBoxProps> = ({socket, userName, agentName}) => {
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
 
-    socket.emit('chatMessage', inputValue);
+    socket.emit('chat_message', inputValue);
     setMessages((prevMessages) => [
       ...prevMessages,
       {
