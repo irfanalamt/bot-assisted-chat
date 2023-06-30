@@ -60,12 +60,11 @@ const ChatBox: React.FC<ChatBoxProps> = ({socket, userName, agentName}) => {
   };
 
   return (
-    <>
-      <div className='flex justify-end w-full max-w-lg pb-1 pr-1'>
+    <div className='flex flex-col'>
+      <div className='flex justify-end w-full max-w-lg p-1'>
         <OnlineStatus isOnline={isOnline} />
       </div>
-
-      <div className='flex flex-col space-y-4 max-w-lg w-full h-full bg-white shadow-lg rounded-lg p-6 overflow-auto mb-6'>
+      <div className='flex flex-col space-y-4 max-w-lg h-full bg-white shadow-lg rounded-lg p-6 overflow-auto mb-6'>
         {messages.map(
           (message, index) =>
             message.text && (
@@ -74,13 +73,13 @@ const ChatBox: React.FC<ChatBoxProps> = ({socket, userName, agentName}) => {
                 className={`flex items-start ${
                   message.type === 'user' ? 'justify-end' : 'justify-start'
                 }`}>
-                <div className='flex flex-col space-y-2 text-sm max-w-xs mx-2 order-2 '>
+                <div className='flex flex-col space-y-2 text-sm max-w-xs mx-2 order-2'>
                   <div>
                     <span
-                      className={`px-4 py-2 rounded-lg inline-block  ${
+                      className={`px-4 py-2 rounded-lg inline-block ${
                         message.type === 'user'
                           ? 'bg-gray-200 text-gray-700 rounded-br-none'
-                          : ' bg-blue-200 text-gray-700 rounded-bl-none'
+                          : 'bg-blue-200 text-gray-700 rounded-bl-none'
                       }`}>
                       {message.text}
                     </span>
@@ -101,7 +100,7 @@ const ChatBox: React.FC<ChatBoxProps> = ({socket, userName, agentName}) => {
       </div>
       <form
         onSubmit={handleSubmit}
-        className='flex items-center justify-between bg-white rounded-lg shadow-md px-6 py-3 max-w-lg w-full'>
+        className='flex items-center justify-between bg-white rounded-lg shadow-md p-6 max-w-lg w-full'>
         <input
           type='text'
           value={inputValue}
@@ -115,7 +114,7 @@ const ChatBox: React.FC<ChatBoxProps> = ({socket, userName, agentName}) => {
           Send
         </button>
       </form>
-    </>
+    </div>
   );
 };
 
