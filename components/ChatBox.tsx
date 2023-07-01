@@ -60,11 +60,11 @@ const ChatBox: React.FC<ChatBoxProps> = ({socket, userName, agentName}) => {
   };
 
   return (
-    <div className='flex flex-col'>
-      <div className='flex justify-end w-full max-w-lg p-1'>
+    <div className='flex flex-col w-full h-full max-w-lg'>
+      <div className='flex justify-end w-full  p-1'>
         <OnlineStatus isOnline={isOnline} />
       </div>
-      <div className='flex flex-col space-y-4 max-w-lg h-full bg-white shadow-lg rounded-lg p-6 overflow-auto mb-6'>
+      <div className='flex flex-col space-y-4 h-full bg-white shadow-lg rounded-lg p-6 overflow-auto mb-6'>
         {messages.map(
           (message, index) =>
             message.text && (
@@ -100,7 +100,7 @@ const ChatBox: React.FC<ChatBoxProps> = ({socket, userName, agentName}) => {
       </div>
       <form
         onSubmit={handleSubmit}
-        className='flex items-center justify-between bg-white rounded-lg shadow-md p-6 max-w-lg w-full'>
+        className='flex items-center justify-between bg-white rounded-lg shadow-md p-6  w-full'>
         <input
           type='text'
           value={inputValue}
