@@ -4,28 +4,35 @@ import OnlineStatus from './OnlineStatus';
 import useSocket from '@/hooks/useSocket';
 
 interface Message {
-  type: string;
+  name: string;
   text: string;
+  type: string;
 }
 interface ChatBoxProps {
   socket: Socket;
   userName: string;
-  agentName: string;
+  messages: Message[];
+  setMessages: React.Dispatch<React.SetStateAction<Message[]>>;
 }
 
-const ChatBox: React.FC<ChatBoxProps> = ({socket, userName, agentName}) => {
-  const [messages, setMessages] = useState<Message[]>([{type: '', text: ''}]);
+const ChatBox: React.FC<ChatBoxProps> = ({
+  socket,
+  userName,
+  messages,
+  setMessages,
+}) => {
   const [inputValue, setInputValue] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const {isOnline} = useSocket(socket);
 
   useEffect(() => {
-    socket.on('chat_message', (message: string) => {
+    socket.on('chat_message', ({name, message}) => {
       setMessages((prevMessages) => [
         ...prevMessages,
         {
-          type: 'server',
+          name: name,
           text: message,
+          type: 'server',
         },
       ]);
     });
@@ -48,12 +55,13 @@ const ChatBox: React.FC<ChatBoxProps> = ({socket, userName, agentName}) => {
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
 
-    socket.emit('chat_message', inputValue);
+    socket.emit('chat_message', {name: userName, message: inputValue});
     setMessages((prevMessages) => [
       ...prevMessages,
       {
-        type: 'user',
+        name: 'user',
         text: inputValue,
+        type: 'user',
       },
     ]);
     setInputValue('');
@@ -90,7 +98,7 @@ const ChatBox: React.FC<ChatBoxProps> = ({socket, userName, agentName}) => {
                         ? 'text-gray-500 self-end'
                         : 'text-blue-600'
                     }`}>
-                    {message.type === 'server' ? agentName : userName}
+                    {message.name == 'user' ? userName : message.name}
                   </span>
                 </div>
               </div>

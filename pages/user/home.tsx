@@ -4,10 +4,19 @@ import ChatBox from '@/components/ChatBox';
 import Snackbar from '@/components/Snackbar';
 import useSnackbar from '@/hooks/useSnackbar';
 
+interface Message {
+  name: string;
+  text: string;
+  type: string;
+}
+
 const Home: React.FC = () => {
   const [userInfo, setUserInfo] = useState({name: '', email: ''});
   const [showChat, setShowChat] = useState(false);
   const [socket, setSocket] = useState<Socket | null>(null);
+  const [messages, setMessages] = useState<Message[]>([
+    {name: '', text: '', type: ''},
+  ]);
   const {isSnackbarVisible, snackbarMessage, snackbarType, showSnackbar} =
     useSnackbar();
 
@@ -61,6 +70,11 @@ const Home: React.FC = () => {
       console.error('Socket connection error:', error);
     });
 
+    socket.on('chat_details', () => {
+      socket.emit('chat_details', messages);
+      console.log('messages:', JSON.stringify(messages));
+    });
+
     return () => {
       socket.off('connect');
       socket.off('connect_error');
@@ -75,7 +89,14 @@ const Home: React.FC = () => {
         BCX Chat
       </h4>
       {socket && (
-        <ChatBox socket={socket} userName={name} agentName={'Bot 1'} />
+        <div className='h-full overflow-auto w-2/3 mx-auto flex justify-center'>
+          <ChatBox
+            socket={socket}
+            userName={name}
+            messages={messages}
+            setMessages={setMessages}
+          />
+        </div>
       )}
     </div>
   ) : (
