@@ -1,14 +1,25 @@
-import {useEffect, useState} from 'react';
-import {useRouter} from 'next/router';
-import {io, Socket} from 'socket.io-client';
 import ChatBox from '@/components/ChatBox';
 import ChatRequestCard from '@/components/ChatRequestCard';
+import MessageListSmall from '@/components/MessageListSmall';
+import {useRouter} from 'next/router';
+import {useEffect, useState} from 'react';
+import {Socket, io} from 'socket.io-client';
 
 interface Message {
   name: string;
   text: string;
   type: string;
 }
+
+interface UserDetails {
+  id: string;
+  details: {
+    name: string;
+    email: string;
+  };
+  messages: Message[];
+}
+
 const Home = (): JSX.Element => {
   const router = useRouter();
   const [socket, setSocket] = useState<Socket | null>(null);
@@ -20,7 +31,7 @@ const Home = (): JSX.Element => {
     name: string;
     id: string;
   } | null>(null);
-  const [userDetails, setUserDetails] = useState(null);
+  const [userDetails, setUserDetails] = useState<UserDetails | null>(null);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -51,9 +62,9 @@ const Home = (): JSX.Element => {
       console.error('Socket connection error:', error);
     });
 
-    socket.on('username', (username: string) => {
-      setAgentName(username);
-      console.log('Received username:', username);
+    socket.on('agent_name', (agentname: string) => {
+      setAgentName(agentname);
+      console.log('Received agentname:', agentname);
     });
 
     socket.on('chat_request', ({name, id}) => {
@@ -61,24 +72,43 @@ const Home = (): JSX.Element => {
       console.log({name, id});
     });
 
+    socket.on('chat_details', (details) => {
+      setUserDetails(details);
+    });
+
+    socket.on('user_disconnected', () => {
+      setUserDetails(null);
+    });
+
     return () => {
       socket.off('connect');
       socket.off('connect_error');
-      socket.off('username');
+      socket.off('agent_name');
       socket.off('chat_request');
+      socket.off('chat_details');
+      socket.off('user_disconnected');
     };
   }, [socket]);
 
   const handleDecline = () => {
+    if (!socket || !chatRequest) return;
+
+    socket.emit('chat_request_decline', chatRequest.id);
     setChatRequest(null);
   };
   const handleAccept = () => {
     if (!socket || !chatRequest) return;
 
-    // send accept_request event
-    socket.emit('accept_request', chatRequest.id);
+    socket.emit('chat_request_accept', chatRequest.id);
 
     setChatRequest(null);
+  };
+  const handleEndChat = () => {
+    if (!socket || !userDetails) return;
+
+    socket.emit('end_chat', userDetails.id);
+
+    setUserDetails(null);
   };
 
   return (
@@ -101,16 +131,32 @@ const Home = (): JSX.Element => {
             />
           </div>
           <div className='w-6/12 bg-gray-100'>
-            <div className='flex flex-col pl-5 pt-5'>
-              <div className='text-2xl mt-1 flex items-center'>
-                <span className='text-gray-700 mr-3'>User Name</span>
-              </div>
-              <span className='text-lg text-gray-600 mt-1'>User Details</span>
-            </div>
+            {userDetails && (
+              <>
+                <div className='flex flex-col pl-5 pt-5'>
+                  <span className='text-xl mb-1 text-gray-800 font-medium'>
+                    User Info
+                  </span>
+                  <div className='text-xl mt-1 flex items-center'>
+                    <span className='text-gray-700 mr-3'>
+                      {userDetails.details.name}
+                    </span>
+                  </div>
+                  <span className='text-lg text-gray-600 mt-1'>
+                    {userDetails.details.email}
+                  </span>
+                </div>
+                <div className='border-t-2 border-b-2 border-gray-200 mt-6 mb-6 py-6 px-6'>
+                  <MessageListSmall messages={userDetails.messages} />
+                </div>
+                <button
+                  onClick={handleEndChat}
+                  className='text-white bg-red-600 px-6 py-2 ml-4 rounded-md hover:bg-red-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-400'>
+                  End Chat
+                </button>
+              </>
+            )}
 
-            <div className='border-t-2 border-b-2 border-gray-200 mt-6 mb-6 py-6 px-6'>
-              // user chat history here
-            </div>
             {chatRequest && (
               <div className='pt-10 pl-5'>
                 <ChatRequestCard

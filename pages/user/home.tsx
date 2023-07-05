@@ -1,8 +1,8 @@
-import React, {useEffect, useState, ChangeEvent, FormEvent} from 'react';
-import {Socket, io} from 'socket.io-client';
 import ChatBox from '@/components/ChatBox';
 import Snackbar from '@/components/Snackbar';
 import useSnackbar from '@/hooks/useSnackbar';
+import React, {ChangeEvent, FormEvent, useEffect, useState} from 'react';
+import {Socket, io} from 'socket.io-client';
 
 interface Message {
   name: string;
@@ -70,14 +70,22 @@ const Home: React.FC = () => {
       console.error('Socket connection error:', error);
     });
 
-    socket.on('chat_details', () => {
-      socket.emit('chat_details', messages);
-      console.log('messages:', JSON.stringify(messages));
+    socket.on('send_chat_details', (id) => {
+      setMessages((currentMessages) => {
+        socket.emit('chat_details', {
+          agentId: id,
+          messages: currentMessages,
+          details: userInfo,
+        });
+        console.log('messages:', JSON.stringify(currentMessages));
+        return currentMessages;
+      });
     });
 
     return () => {
       socket.off('connect');
       socket.off('connect_error');
+      socket.off('send_chat_details');
     };
   }, [socket]);
 
