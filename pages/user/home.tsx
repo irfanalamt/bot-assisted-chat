@@ -11,7 +11,7 @@ interface Message {
 }
 
 const Home: React.FC = () => {
-  const [userInfo, setUserInfo] = useState({name: '', email: ''});
+  const [userInfo, setUserInfo] = useState({name: '', email: '', clientId: ''});
   const [showChat, setShowChat] = useState(false);
   const [socket, setSocket] = useState<Socket | null>(null);
   const [messages, setMessages] = useState<Message[]>([
@@ -89,7 +89,7 @@ const Home: React.FC = () => {
     };
   }, [socket]);
 
-  const {name, email} = userInfo;
+  const {name, email, clientId} = userInfo;
 
   return showChat ? (
     <div className='flex flex-col h-screen justify-between items-center bg-gray-200 px-6 py-6'>
@@ -121,6 +121,14 @@ const Home: React.FC = () => {
           className='bg-white rounded-lg shadow-md px-8 py-8 max-w-md space-y-4'>
           <input
             type='text'
+            name='clientId'
+            value={clientId}
+            onChange={handleChange}
+            className='w-full border-2 border-gray-300 p-3 rounded outline-none focus:border-indigo-500'
+            placeholder='ClientID'
+          />
+          <input
+            type='text'
             name='name'
             value={name}
             onChange={handleChange}
@@ -137,7 +145,7 @@ const Home: React.FC = () => {
           />
           <button
             type='submit'
-            className='w-full bg-indigo-500 text-white font-semibold p-3 rounded hover:bg-green-600 transition ease-in-out duration-200'>
+            className='w-full bg-green-500 text-white font-semibold p-3 rounded hover:bg-green-700 transition ease-in-out duration-200'>
             Start Chat
           </button>
         </form>

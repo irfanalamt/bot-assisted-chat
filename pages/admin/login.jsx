@@ -3,33 +3,26 @@ import {useRouter} from 'next/router';
 import useSnackbar from '@/hooks/useSnackbar';
 import Snackbar from '@/components/Snackbar';
 import axios from 'axios';
-
-interface UserInfo {
-  clientId: string;
-  username: string;
-  accessCode: string;
-}
-
-const LoginPage: React.FC = () => {
-  const [userInfo, setUserInfo] = useState<UserInfo>({
+const Login = () => {
+  const [adminInfo, setAdminInfo] = useState({
+    clientId: '',
     username: '',
     accessCode: '',
-    clientId: '',
   });
   const {isSnackbarVisible, snackbarMessage, snackbarType, showSnackbar} =
     useSnackbar();
 
   const router = useRouter();
 
-  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (event) => {
     const {name, value} = event.target;
-    setUserInfo((prevState) => ({...prevState, [name]: value}));
+    setAdminInfo((prevState) => ({...prevState, [name]: value}));
   };
 
-  const isFormValid = (): boolean => {
-    const {username, accessCode, clientId} = userInfo;
+  const isFormValid = () => {
+    const {clientId, username, accessCode} = adminInfo;
 
-    if (!username || !accessCode || !clientId) {
+    if (!clientId || !username || !accessCode) {
       showSnackbar('All fields are required.', 'error');
       return false;
     }
@@ -42,37 +35,32 @@ const LoginPage: React.FC = () => {
     return true;
   };
 
-  const handleSubmit = async (event: React.FormEvent) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
 
     if (!isFormValid()) return;
 
     try {
       const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_SERVER_URL}/agent/login`,
-        userInfo
+        `${process.env.NEXT_PUBLIC_SERVER_URL}/admin/login`,
+        adminInfo
       );
 
-      const data = response.data;
-
-      console.log('data', data);
       if (response.status === 200) {
-        showSnackbar('Agent login success.', 'success');
-        localStorage.setItem('token', data.token);
+        showSnackbar('Admin login success.', 'success');
         setTimeout(() => {
-          router.push('/agent/home');
+          router.push('/admin/home');
         }, 2000);
       } else {
-        console.log(data.message);
         showSnackbar('Login error.', 'error');
       }
-    } catch (error: any) {
-      console.error('Error:', error.message);
-      showSnackbar(`${error.response.data.error}`, 'error');
+    } catch (error) {
+      console.error('Error:', error);
+      showSnackbar(`${error.message}`, 'error');
     }
   };
 
-  const {username, accessCode, clientId} = userInfo;
+  const {username, accessCode, clientId} = adminInfo;
 
   return (
     <div className='flex flex-col h-screen items-center bg-gray-200 px-2 pt-40'>
@@ -81,7 +69,7 @@ const LoginPage: React.FC = () => {
       </h1>
       <div>
         <div className='text-xl text-center text-gray-800 font-bold mb-4'>
-          Agent Login
+          Admin Login
         </div>
         <form
           onSubmit={handleSubmit}
@@ -108,11 +96,11 @@ const LoginPage: React.FC = () => {
             value={accessCode}
             onChange={handleChange}
             className='w-full border-2 border-gray-300 p-3 rounded outline-none focus:border-indigo-500'
-            placeholder='Access Code'
+            placeholder='Password'
           />
           <button
             type='submit'
-            className='w-full bg-blue-500 text-white font-semibold p-3 rounded hover:bg-blue-700 transition ease-in-out duration-200'>
+            className='w-full bg-purple-500 text-white font-semibold p-3 rounded hover:bg-purple-700 transition ease-in-out duration-200'>
             Login
           </button>
         </form>
@@ -126,4 +114,4 @@ const LoginPage: React.FC = () => {
   );
 };
 
-export default LoginPage;
+export default Login;
