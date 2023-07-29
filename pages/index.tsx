@@ -27,11 +27,6 @@ const Index: React.FC = () => {
             className='bg-green-600 hover:bg-green-700 focus:ring-4 focus:ring-green-300 text-white font-semibold py-2 px-4 rounded w-full transition duration-200 ease-in-out'>
             Chat Now
           </button>
-          <button
-            onClick={() => router.push('/register')}
-            className='bg-teal-600 hover:bg-teal-700 focus:ring-4 focus:ring-teal-300 text-white font-semibold py-2 px-4 rounded w-full transition duration-200 ease-in-out'>
-            Register Client
-          </button>
         </div>
       </div>
     </div>
