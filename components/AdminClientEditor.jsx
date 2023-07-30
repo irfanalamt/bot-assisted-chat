@@ -1,23 +1,10 @@
 import axios from 'axios';
 import {useState} from 'react';
 
-const AdminClientEditor = ({client}) => {
+const AdminClientEditor = ({client, handleGoBack}) => {
   const [clientData, setClientData] = useState(
-    client || {name: '', email: '', clientId: '', admins: []}
+    client || {name: '', email: '', clientId: '', phone: '', active: false}
   );
-  const [activeTab, setActiveTab] = useState('main');
-  const [adminData, setAdminData] = useState({
-    name: '',
-    username: '',
-    password: '',
-  });
-  const [editMode, setEditMode] = useState(false);
-  const [isNewAdmin, setIsNewAdmin] = useState(false);
-
-  function saveClientAdminData(e) {
-    e.preventDefault();
-    // modify the client admins of a client
-  }
 
   async function saveClientMainData(e) {
     e.preventDefault();
@@ -29,6 +16,9 @@ const AdminClientEditor = ({client}) => {
       clientId: clientData.clientId,
       name: clientData.name,
       email: clientData.email,
+      phone: clientData.phone,
+      active: clientData.active,
+      description: clientData.description,
     };
 
     try {
@@ -43,6 +33,9 @@ const AdminClientEditor = ({client}) => {
       );
       const updatedTask = response.data;
       console.log('Updated Task:', updatedTask);
+      setTimeout(() => {
+        handleGoBack();
+      }, 1000);
     } catch (error) {
       console.error('Error:', error);
     }
@@ -51,145 +44,111 @@ const AdminClientEditor = ({client}) => {
   return (
     <div className='p-5 shadow-lg rounded-lg overflow-auto  mx-auto w-2/6 bg-gray-50'>
       <div className='mb-4'>
-        <div className='flex justify-between gap-4'>
-          <button
-            onClick={() => {
-              setActiveTab('main');
-              setEditMode(false);
-            }}
-            className={`p-2 rounded-full text-white font-semibold ${
-              activeTab === 'main' ? 'bg-indigo-500' : 'bg-gray-300'
-            }`}>
-            Main
-          </button>
-          <button
-            onClick={() => setActiveTab('admins')}
-            className={`p-2 rounded-full text-white font-semibold ${
-              activeTab === 'admins' ? 'bg-indigo-500' : 'bg-gray-300'
-            }`}>
-            Client Admins
-          </button>
-        </div>
+        <div className='mt-4'>
+          <div className='flex justify-between'>
+            <div>
+              <label className='block font-medium text-gray-700'>
+                Client ID:
+              </label>
+              <input
+                type='text'
+                className='block p-2 mt-1 border border-gray-300 text-gray-500 bg-gray-300 rounded w-32'
+                value={clientData.clientId}
+                readOnly
+              />
+            </div>
+            <div>
+              <span className='font-medium text-gray-700'>Active:</span>
+              <div className='mt-1 p-2'>
+                <label>
+                  <input
+                    type='radio'
+                    name='active'
+                    value='true'
+                    checked={clientData.active === true}
+                    onChange={(e) =>
+                      setClientData({
+                        ...clientData,
+                        active: true,
+                      })
+                    }
+                    className='mr-2'
+                  />
+                  True
+                </label>
 
-        {activeTab === 'main' ? (
-          <div className='mt-4'>
-            <label className='block font-medium text-gray-700'>
-              Client ID:
-            </label>
-            <input
-              type='text'
-              className='block w-full p-2 mt-1 border border-gray-300 text-gray-500 bg-white rounded'
-              value={clientData.clientId}
-              readOnly
-            />
+                <label className='ml-4'>
+                  <input
+                    type='radio'
+                    name='active'
+                    value='false'
+                    checked={clientData.active === false}
+                    onChange={(e) =>
+                      setClientData({
+                        ...clientData,
+                        active: false,
+                      })
+                    }
+                    className='mr-2'
+                  />
+                  False
+                </label>
+              </div>
+            </div>
+          </div>
 
-            <label className='block mt-4 font-medium text-gray-700'>
-              Name:
-            </label>
-            <input
-              type='text'
-              className='block w-full p-2 mt-1 border border-gray-300 rounded'
-              value={clientData.name}
-              onChange={(e) =>
-                setClientData({...clientData, name: e.target.value})
-              }
-            />
-            <label className='block mt-4 font-medium text-gray-700'>
-              Email:
-            </label>
-            <input
-              type='text'
-              className='block w-full p-2 mt-1 border border-gray-300 rounded'
-              value={clientData.email}
-              onChange={(e) =>
-                setClientData({...clientData, email: e.target.value})
-              }
-            />
+          <label className='block mt-4 font-medium text-gray-700'>Name:</label>
+          <input
+            type='text'
+            className='block w-full p-2 mt-1 border border-gray-300 rounded'
+            value={clientData.name}
+            onChange={(e) =>
+              setClientData({...clientData, name: e.target.value})
+            }
+          />
+
+          <label className='block mt-4 font-medium text-gray-700'>Email:</label>
+          <input
+            type='text'
+            className='block w-full p-2 mt-1 border border-gray-300 rounded'
+            value={clientData.email}
+            onChange={(e) =>
+              setClientData({...clientData, email: e.target.value})
+            }
+          />
+          <label className='block mt-4 font-medium text-gray-700'>Phone:</label>
+          <input
+            type='tel'
+            className='block w-full p-2 mt-1 border border-gray-300 rounded'
+            value={clientData.phone}
+            onChange={(e) =>
+              setClientData({...clientData, phone: e.target.value})
+            }
+          />
+          <label className='block mt-4 font-medium text-gray-700'>
+            Description:
+          </label>
+          <textarea
+            className='block w-full p-2 mt-1 border border-gray-300 rounded'
+            value={clientData.description}
+            onChange={(e) =>
+              setClientData({...clientData, description: e.target.value})
+            }
+          />
+          <div className='flex justify-between'>
             <button
-              className='w-1/2 mr-2 bg-indigo-500 hover:bg-indigo-600 text-white p-2 rounded mt-4 transition-colors duration-200'
+              className='w-2/5 mr-2 bg-blue-500 hover:bg-blue-600 text-white p-2 rounded mt-4 transition-colors duration-200'
               onClick={saveClientMainData}>
               Save
             </button>
-          </div>
-        ) : (
-          <div className='mt-4'>
-            {clientData.admins.map((admin, index) => (
-              <div
-                key={index}
-                className='flex justify-between items-center py-4 px-2 my-2 bg-white border border-gray-300 rounded-md shadow-md hover:bg-gray-100 transition-colors duration-200 cursor-pointer'
-                onClick={() => {
-                  setAdminData(admin);
-                  setEditMode(true);
-                  setIsNewAdmin(false);
-                }}>
-                <p className='text-gray-700 font-medium'>{admin.name}</p>
-                <p className='text-gray-500'>{admin.username}</p>
-              </div>
-            ))}
             <button
-              className='mt-4 w-full bg-green-500 hover:bg-green-600 text-white p-2 rounded transition-colors duration-200'
-              onClick={() => {
-                setAdminData({name: '', username: '', password: ''});
-                setIsNewAdmin(true);
-                setEditMode(true);
-              }}>
-              Add New Admin
-            </button>
-          </div>
-        )}
-      </div>
-
-      {editMode && (
-        <div className='mt-4'>
-          <label className='block mt-2 font-medium text-gray-700'>
-            Username:
-          </label>
-          <input
-            type='text'
-            className={`block w-full p-2 mt-1 border border-gray-300 rounded ${
-              !isNewAdmin && 'text-gray-500 bg-white'
-            }`}
-            value={adminData.username}
-            readOnly={!isNewAdmin}
-            onChange={(e) =>
-              setAdminData({...adminData, username: e.target.value})
-            }
-          />
-          <label className='block mt-4 font-medium text-gray-700'>
-            Admin Name:
-          </label>
-          <input
-            type='text'
-            className='block w-full p-2 mt-1 border border-gray-300 rounded'
-            value={adminData.name}
-            onChange={(e) => setAdminData({...adminData, name: e.target.value})}
-          />
-
-          <label className='block mt-4 font-medium text-gray-700'>
-            Password:
-          </label>
-          <input
-            type='password'
-            className='block w-full p-2 mt-1 border border-gray-300 rounded'
-            value={adminData.password}
-            onChange={(e) =>
-              setAdminData({...adminData, password: e.target.value})
-            }
-          />
-          <div className='mt-4 flex justify-between'>
-            <button
-              className='w-1/2 mr-2 bg-indigo-500 hover:bg-indigo-600 text-white p-2 rounded transition-colors duration-200'
-              onClick={() => setEditMode(false)}>
-              Save
-            </button>
-            <button
-              className='w-1/2 ml-2 bg-red-500 hover:bg-red-600 text-white p-2 rounded transition-colors duration-200'
-              onClick={() => setEditMode(false)}>
+              className='w-2/5 mr-2 bg-red-500 hover:bg-red-600 text-white p-2 rounded mt-4 transition-colors duration-200'
+              onClick={handleGoBack}>
               Cancel
             </button>
           </div>
         </div>
-      )}
+      </div>
     </div>
   );
 };

@@ -3,6 +3,8 @@ import useSnackbar from '@/hooks/useSnackbar';
 import Snackbar from '@/components/Snackbar';
 import axios from 'axios';
 import AdminClientEditor from '@/components/AdminClientEditor';
+import AdminClientEditorAdmin from '../components/AdminClientEditorAdmin';
+import {type} from 'os';
 
 const Manage = () => {
   const [sysAdminInfo, setSysAdminInfo] = useState({
@@ -12,7 +14,6 @@ const Manage = () => {
   const [step, setStep] = useState(1);
   const [clients, setClients] = useState(null);
   const [currentClient, setCurrentClient] = useState(null);
-  const [isEditing, setIsEditing] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   const {isSnackbarVisible, snackbarMessage, snackbarType, showSnackbar} =
@@ -105,15 +106,44 @@ const Manage = () => {
     return token;
   }
 
-  function handleClientSelect(client) {
-    console.log('client selected = ' + client.name);
+  function handleAddNewClient() {
+    const newId = calculateNewClientId(clients);
+
+    const newClient = {
+      clientId: newId,
+      name: '',
+      email: '',
+      phone: '',
+      description: '',
+      active: true,
+    };
+
+    setCurrentClient(newClient);
+    setStep(3);
+  }
+
+  function calculateNewClientId(clients) {
+    if (!clients.length) return 1001;
+
+    let maxId = clients[0].clientId;
+
+    for (let i = 1; i < clients.length; i++) {
+      if (clients[i].clientId > maxId) {
+        maxId = clients[i].clientId;
+      }
+    }
+
+    return maxId + 1;
+  }
+
+  function handleEditClient(client) {
     setCurrentClient(client);
     setStep(3);
   }
 
-  function handleAddNewClient() {
-    setCurrentClient(null);
-    setStep(3);
+  function handleModifyAdmins(client) {
+    setCurrentClient(client);
+    setStep(4);
   }
 
   function handleLogout() {
@@ -175,24 +205,45 @@ const Manage = () => {
         </div>
       )}
       {step === 2 && (
-        <div className='w-full h-full flex flex-col  justify-center items-center'>
-          <div id='clientList'>
-            {clients.map((client, i) => (
-              <button
-                key={i}
-                className='px-4 py-2 rounded-full shadow-md text-white bg-blue-500 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-50 m-2 transition-colors duration-200'
-                onClick={() => handleClientSelect(client)}>
-                {client.name}
-              </button>
-            ))}
-          </div>
-          <div className='self-end'>
-            <button
-              className='px-4 py-2 rounded-full shadow-md text-white bg-gray-500 hover:bg-gray-700  m-2 transition-colors duration-200'
-              onClick={handleAddNewClient}>
-              Add new client
-            </button>
-          </div>
+        <div className='w-full flex flex-col p-4'>
+          <h5 className='text-center text-2xl mb-4'>Client Management</h5>
+          {clients.map((client, i) => (
+            <div
+              key={i}
+              className='w-full flex justify-between items-center border-b border-gray-200 py-4'>
+              <p className='font-semibold'>{client.clientId}</p>
+              <div className='w-4/5 flex items-center justify-between ml-2'>
+                <p className='font-semibold text-lg'>{client.name}</p>
+                <p className='text-gray-600'>{client.phone}</p>
+                <p className='text-sm text-gray-600'>{client.email}</p>
+
+                <p className='text-gray-600'>
+                  active:
+                  <span
+                    className={`text-${client.active ? 'teal' : 'red'}-500`}>
+                    {client.active ? ' TRUE' : ' FALSE'}
+                  </span>
+                </p>
+              </div>
+              <div className='w-1/5 flex items-center justify-between ml-2'>
+                <button
+                  className='px-4 py-2 mx-2 rounded-md shadow-md text-white bg-blue-500 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-50 transition-colors duration-200'
+                  onClick={() => handleEditClient(client)}>
+                  Edit
+                </button>
+                <button
+                  className='px-4 py-2 mx-2 rounded-md shadow-md text-white bg-green-500 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-50 transition-colors duration-200'
+                  onClick={() => handleModifyAdmins(client)}>
+                  Modify Admins
+                </button>
+              </div>
+            </div>
+          ))}
+          <button
+            className='px-4 py-2 rounded-md shadow-md text-white bg-stone-500 hover:bg-stone-700 focus:outline-none focus:ring-2 focus:ring-stone-400 focus:ring-opacity-50 transition-colors duration-200 w-max mx-auto mt-8'
+            onClick={handleAddNewClient}>
+            Add new client
+          </button>
         </div>
       )}
       {step === 3 && (
@@ -205,7 +256,26 @@ const Manage = () => {
             }}>
             Go back
           </button>
-          <AdminClientEditor client={currentClient} />
+          <AdminClientEditor
+            client={currentClient}
+            handleGoBack={() => {
+              getClientData();
+              setStep(2);
+            }}
+          />
+        </div>
+      )}
+      {step === 4 && (
+        <div className='w-full flex flex-col justify-center'>
+          <button
+            className='px-4 py-2 rounded-full shadow-md text-white bg-gray-500 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-50 m-2 self-start transition-colors duration-200'
+            onClick={() => {
+              getClientData();
+              setStep(2);
+            }}>
+            Go back
+          </button>
+          <AdminClientEditorAdmin client={currentClient} />
         </div>
       )}
     </div>
