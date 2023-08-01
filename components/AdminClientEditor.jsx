@@ -57,43 +57,21 @@ const AdminClientEditor = ({client, handleGoBack}) => {
                 readOnly
               />
             </div>
-            <div>
-              <span className='font-medium text-gray-700'>Active:</span>
-              <div className='mt-1 p-2'>
-                <label>
-                  <input
-                    type='radio'
-                    name='active'
-                    value='true'
-                    checked={clientData.active === true}
-                    onChange={(e) =>
-                      setClientData({
-                        ...clientData,
-                        active: true,
-                      })
-                    }
-                    className='mr-2'
-                  />
-                  True
-                </label>
-
-                <label className='ml-4'>
-                  <input
-                    type='radio'
-                    name='active'
-                    value='false'
-                    checked={clientData.active === false}
-                    onChange={(e) =>
-                      setClientData({
-                        ...clientData,
-                        active: false,
-                      })
-                    }
-                    className='mr-2'
-                  />
-                  False
-                </label>
-              </div>
+            <div className='flex items-center'>
+              <span className='font-medium text-gray-700 mr-3'>Active:</span>
+              <label className='inline-flex items-center'>
+                <input
+                  type='checkbox'
+                  className='form-checkbox h-5 w-5'
+                  checked={clientData.active}
+                  onChange={(e) =>
+                    setClientData({
+                      ...clientData,
+                      active: e.target.checked,
+                    })
+                  }
+                />
+              </label>
             </div>
           </div>
 

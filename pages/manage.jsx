@@ -15,6 +15,7 @@ const Manage = () => {
   const [clients, setClients] = useState(null);
   const [currentClient, setCurrentClient] = useState(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [showGoBackBtn, setShowGoBackBtn] = useState(true);
 
   const {isSnackbarVisible, snackbarMessage, snackbarType, showSnackbar} =
     useSnackbar();
@@ -206,39 +207,48 @@ const Manage = () => {
       )}
       {step === 2 && (
         <div className='w-full flex flex-col p-4'>
-          <h5 className='text-center text-2xl mb-4'>Client Management</h5>
-          {clients.map((client, i) => (
-            <div
-              key={i}
-              className='w-full flex justify-between items-center border-b border-gray-200 py-4'>
-              <p className='font-semibold'>{client.clientId}</p>
-              <div className='w-4/5 flex items-center justify-between ml-2'>
-                <p className='font-semibold text-lg'>{client.name}</p>
-                <p className='text-gray-600'>{client.phone}</p>
-                <p className='text-sm text-gray-600'>{client.email}</p>
-
-                <p className='text-gray-600'>
-                  active:
-                  <span
-                    className={`text-${client.active ? 'teal' : 'red'}-500`}>
-                    {client.active ? ' TRUE' : ' FALSE'}
-                  </span>
-                </p>
-              </div>
-              <div className='w-1/5 flex items-center justify-between ml-2'>
-                <button
-                  className='px-4 py-2 mx-2 rounded-md shadow-md text-white bg-blue-500 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-50 transition-colors duration-200'
-                  onClick={() => handleEditClient(client)}>
-                  Edit
-                </button>
-                <button
-                  className='px-4 py-2 mx-2 rounded-md shadow-md text-white bg-green-500 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-50 transition-colors duration-200'
-                  onClick={() => handleModifyAdmins(client)}>
-                  Modify Admins
-                </button>
-              </div>
-            </div>
-          ))}
+          <h2 className='text-center text-2xl mb-4'>Client Management</h2>
+          <table className='w-full text-left bg-white rounded-lg overflow-hidden shadow-lg'>
+            <thead className='bg-gray-50'>
+              <tr>
+                <th className='py-2 px-4 text-gray-600'>Client ID</th>
+                <th className='py-2 px-4 text-gray-600'>Name</th>
+                <th className='py-2 px-4 text-gray-600'>Phone</th>
+                <th className='py-2 px-4 text-gray-600'>Email</th>
+                <th className='py-2 px-4 text-gray-600'>Status</th>
+                <th className='py-2 px-4 text-gray-600 '>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {clients.map((client, i) => (
+                <tr key={i} className='border-t border-gray-200'>
+                  <td className='py-2 px-4'>{client.clientId}</td>
+                  <td className='py-2 px-4'>{client.name}</td>
+                  <td className='py-2 px-4'>{client.phone}</td>
+                  <td className='py-2 px-4'>{client.email}</td>
+                  <td className='py-2 px-4'>
+                    <span
+                      className={`inline-block h-4 w-4 rounded-full ${
+                        client.active ? 'bg-teal-500' : 'bg-red-500'
+                      }`}
+                    />
+                  </td>
+                  <td className='py-2 px-4 flex justify-between items-center space-x-2'>
+                    <button
+                      className='px-4 py-2 rounded-md shadow-md text-white bg-blue-500 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-50 transition-colors duration-200 flex-grow'
+                      onClick={() => handleEditClient(client)}>
+                      Edit
+                    </button>
+                    <button
+                      className='px-4 py-2 rounded-md shadow-md text-white bg-green-500 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-50 transition-colors duration-200 flex-grow'
+                      onClick={() => handleModifyAdmins(client)}>
+                      Admins
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
           <button
             className='px-4 py-2 rounded-md shadow-md text-white bg-stone-500 hover:bg-stone-700 focus:outline-none focus:ring-2 focus:ring-stone-400 focus:ring-opacity-50 transition-colors duration-200 w-max mx-auto mt-8'
             onClick={handleAddNewClient}>
@@ -267,15 +277,22 @@ const Manage = () => {
       )}
       {step === 4 && (
         <div className='w-full flex flex-col justify-center'>
-          <button
-            className='px-4 py-2 rounded-full shadow-md text-white bg-gray-500 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-50 m-2 self-start transition-colors duration-200'
-            onClick={() => {
-              getClientData();
-              setStep(2);
-            }}>
-            Go back
-          </button>
-          <AdminClientEditorAdmin client={currentClient} />
+          {showGoBackBtn && (
+            <button
+              className='px-4 py-2 rounded-full shadow-md text-white bg-gray-500 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-50 m-2 self-start transition-colors duration-200'
+              onClick={() => {
+                getClientData();
+                setStep(2);
+              }}>
+              Go back
+            </button>
+          )}
+
+          <AdminClientEditorAdmin
+            client={currentClient}
+            setShowGoBackBtn={setShowGoBackBtn}
+            reloadClientData={getClientData}
+          />
         </div>
       )}
     </div>
