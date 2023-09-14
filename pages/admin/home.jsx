@@ -1,55 +1,103 @@
-import {useEffect, useState} from 'react';
 import {useRouter} from 'next/router';
-import AgentManager from '../../components/AgentManager';
+import {useEffect, useState} from 'react';
+import TopBar from '../../components/TopBar';
+import {decode} from '../../utils/cipher';
+import ManageAdmins from '../../components/ManageAdmins';
+import ManageAgents from '../../components/ManageAgents';
 
 const Home = () => {
   const router = useRouter();
-  const [selectedOperation, setSelectedOperation] = useState(null);
+  const [userDetails, setUserDetails] = useState(null);
+  const [currentMode, setCurrentMode] = useState(null);
 
   useEffect(() => {
-    const token = localStorage.getItem('adminToken');
+    const authData = localStorage.getItem('authData');
 
-    if (!token) {
-      router.replace('/admin/login');
+    if (!authData) {
+      router.replace('/');
+      return;
+    }
+
+    try {
+      const {role, token, name, clientId} = JSON.parse(
+        decode(authData, process.env.NEXT_PUBLIC_AUTH_KEY)
+      );
+      setUserDetails({role, token, name, clientId});
+    } catch (error) {
+      console.error('Failed to parse auth data', error);
+      router.replace('/');
     }
   }, []);
 
-  return (
-    <div className='flex flex-col items-center h-screen bg-gray-100 px-10'>
-      <div className='self-start pt-4'>
-        <h1 className='text-4xl font-bold mb-4 '>Admin Home</h1>
-      </div>
-      <div className='self-start pt-1'>
-        <h1 className='text-2xl'>Welcome admin_name</h1>
-      </div>
-      <div className='h-4/5 flex flex-col justify-center'>
-        {!selectedOperation && (
-          <div className='flex space-x-4 bg-gray-300 p-5 '>
-            <button
-              className='px-6 py-2 text-lg text-white bg-blue-600 hover:bg-blue-500 rounded-lg focus:outline-none'
-              onClick={() => setSelectedOperation('addAgent')}>
-              Add Agents
-            </button>
+  function handleLogout() {
+    localStorage.clear();
+    router.push('/');
+  }
 
+  return (
+    <div className='min-h-screen flex flex-col bg-gray-100'>
+      <TopBar userDetails={userDetails} handleLogout={handleLogout} />
+      <div className='flex-grow p-6 '>
+        {!currentMode ? (
+          <div className='grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8'>
+            {userDetails?.role === 'clientAdmin' && (
+              <div
+                className='bg-white p-6 rounded-lg shadow text-center hover:shadow-lg transition duration-100 hover:bg-sky-100 cursor-pointer'
+                onClick={() => setCurrentMode('manageAdmins')}>
+                <h2 className='text-xl font-bold text-gray-800'>
+                  Manage Admins
+                </h2>
+              </div>
+            )}
+
+            <div
+              className='bg-white p-6 rounded-lg shadow text-center hover:shadow-lg transition duration-100 hover:bg-sky-100 cursor-pointer'
+              onClick={() => setCurrentMode('manageAgents')}>
+              <h2 className='text-xl font-bold text-gray-800'>Manage Agents</h2>
+            </div>
+            <div
+              className='bg-white p-6 rounded-lg shadow text-center hover:shadow-lg transition duration-100 hover:bg-sky-100 cursor-pointer'
+              onClick={() => setCurrentMode('setupNlp')}>
+              <h2 className='text-xl font-bold text-gray-800'>
+                Setup NLP Files and Subflows
+              </h2>
+            </div>
+            <div
+              className='bg-white p-6 rounded-lg shadow text-center hover:shadow-lg transition duration-300 hover:bg-sky-100 cursor-pointer'
+              onClick={() => setCurrentMode('setupCss')}>
+              <h2 className='text-xl font-bold text-gray-800'>
+                Setup CSS Files
+              </h2>
+            </div>
+          </div>
+        ) : (
+          <div>
             <button
-              className='px-6 py-2 text-lg text-white bg-green-600 hover:bg-green-500 rounded-lg focus:outline-none'
-              onClick={() => console.log('Add NLP Files and Subflows')}>
-              Add NLP Files and Subflows
-            </button>
-            <button
-              className='px-6 py-2 text-lg text-white bg-red-600 hover:bg-red-500 rounded-lg focus:outline-none'
-              onClick={() => console.log('Modify Styles')}>
-              Modify Styles
+              className='bg-blue-400 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded transition duration-300'
+              onClick={() => setCurrentMode(null)}>
+              Go Back
             </button>
           </div>
         )}
-        {selectedOperation === 'addAgent' && <AgentManager />}
+        {currentMode === 'manageAdmins' && (
+          <>
+            <h2 className='text-3xl text-center'>Manage Admins</h2>
+            <ManageAdmins userDetails={userDetails} />
+          </>
+        )}
+        {currentMode === 'manageAgents' && (
+          <>
+            <h2 className='text-3xl text-center'>Manage Agents</h2>
+            <ManageAgents userDetails={userDetails} />
+          </>
+        )}
+        {currentMode === 'setupNlp' && (
+          <h2 className='text-3xl text-center'>Setup NLP files</h2>
+        )}
+        {currentMode === 'setupCss' && (
+          <h2 className='text-3xl text-center'>Setup CSS Files</h2>
+        )}
       </div>
-      <button
-        className='px-6 py-2 text-lg text-white bg-gray-600 hover:bg-blue-500 rounded-lg focus:outline-none'
-        onClick={() => setSelectedOperation(null)}>
-        Go to admin menu
-      </button>
     </div>
   );
 };
