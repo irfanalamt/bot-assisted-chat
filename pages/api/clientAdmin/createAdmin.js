@@ -16,6 +16,10 @@ export default async (req, res) => {
           return res.status(403).json({error: 'Invalid client ID'});
         }
 
+        if (req.body.role !== 'admin') {
+          return res.status(400).json({error: 'Invalid role'});
+        }
+
         const newAdmin = await User.create(req.body);
 
         res.status(201).json(newAdmin);
