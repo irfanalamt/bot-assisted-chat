@@ -1,7 +1,7 @@
 import React, {useState, useEffect, useRef} from 'react';
 import axios from 'axios';
 
-function ManageAdmins({userDetails}) {
+function ManageAdmins({userDetails, goToHome}) {
   const [admins, setAdmins] = useState([]);
   const [formData, setFormData] = useState({
     username: '',
@@ -170,6 +170,7 @@ function ManageAdmins({userDetails}) {
             borderRadius: '12px',
             backgroundColor: '#f0f0f0',
           }}>
+          <h2 className='text-2xl text-center '>Admin Details</h2>
           <input
             type='text'
             name='username'
@@ -289,8 +290,16 @@ function ManageAdmins({userDetails}) {
         </div>
       ) : (
         <>
+          <div>
+            <button
+              className='bg-blue-400 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded transition duration-300'
+              onClick={goToHome}>
+              Go Back
+            </button>
+            <h2 className='text-3xl text-center '>Manage Admins</h2>
+          </div>
           <button
-            className='bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 mb-4 rounded transition duration-300 '
+            className='bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 mb-4 ml-2 rounded transition duration-300 '
             onClick={handleAddNewAdmin}>
             Add New Admin
           </button>

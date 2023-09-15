@@ -4,6 +4,7 @@ import TopBar from '../../components/TopBar';
 import {decode} from '../../utils/cipher';
 import ManageAdmins from '../../components/ManageAdmins';
 import ManageAgents from '../../components/ManageAgents';
+import SetupNlp from '../../components/SetupNlp';
 
 const Home = () => {
   const router = useRouter();
@@ -38,7 +39,7 @@ const Home = () => {
     <div className='min-h-screen flex flex-col bg-gray-100'>
       <TopBar userDetails={userDetails} handleLogout={handleLogout} />
       <div className='flex-grow p-6 '>
-        {!currentMode ? (
+        {!currentMode && (
           <div className='grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8'>
             {userDetails?.role === 'clientAdmin' && (
               <div
@@ -70,29 +71,26 @@ const Home = () => {
               </h2>
             </div>
           </div>
-        ) : (
-          <div>
-            <button
-              className='bg-blue-400 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded transition duration-300'
-              onClick={() => setCurrentMode(null)}>
-              Go Back
-            </button>
-          </div>
         )}
         {currentMode === 'manageAdmins' && (
-          <>
-            <h2 className='text-3xl text-center'>Manage Admins</h2>
-            <ManageAdmins userDetails={userDetails} />
-          </>
+          <ManageAdmins
+            userDetails={userDetails}
+            goToHome={() => setCurrentMode(null)}
+          />
         )}
         {currentMode === 'manageAgents' && (
-          <>
-            <h2 className='text-3xl text-center'>Manage Agents</h2>
-            <ManageAgents userDetails={userDetails} />
-          </>
+          <ManageAgents
+            userDetails={userDetails}
+            goToHome={() => setCurrentMode(null)}
+          />
         )}
         {currentMode === 'setupNlp' && (
-          <h2 className='text-3xl text-center'>Setup NLP files</h2>
+          <>
+            <SetupNlp
+              userDetails={userDetails}
+              goToHome={() => setCurrentMode(null)}
+            />
+          </>
         )}
         {currentMode === 'setupCss' && (
           <h2 className='text-3xl text-center'>Setup CSS Files</h2>

@@ -1,7 +1,7 @@
 import React, {useState, useEffect, useRef} from 'react';
 import axios from 'axios';
 
-function ManageAgents({userDetails}) {
+function ManageAgents({userDetails, goToHome}) {
   const [agents, setAgents] = useState([]);
   const [formData, setFormData] = useState({
     username: '',
@@ -169,6 +169,7 @@ function ManageAgents({userDetails}) {
             borderRadius: '12px',
             backgroundColor: '#f0f0f0',
           }}>
+          <h2 className='text-2xl text-center '>Agent Details</h2>
           <input
             type='text'
             name='username'
@@ -288,8 +289,16 @@ function ManageAgents({userDetails}) {
         </div>
       ) : (
         <>
+          <div>
+            <button
+              className='bg-blue-400 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded transition duration-300'
+              onClick={goToHome}>
+              Go Back
+            </button>
+            <h2 className='text-3xl text-center '>Manage Agents</h2>
+          </div>
           <button
-            className='bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 mb-4 rounded transition duration-300 '
+            className='bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 mb-4 ml-2 rounded transition duration-300 '
             onClick={handleAddNewAgent}>
             Add New Agent
           </button>
