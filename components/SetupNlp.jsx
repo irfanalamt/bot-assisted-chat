@@ -1,43 +1,12 @@
-import {useState} from 'react';
+import {useEffect, useState} from 'react';
+import axios from 'axios';
 import IntentEditor from './IntentEditor';
+import {TrashIcon} from '@heroicons/react/24/solid';
+import {PencilSquareIcon} from '@heroicons/react/24/solid';
+import ConfirmActionModal from './ConfirmActionModal';
 
 const SetupNlp = ({userDetails, goToHome}) => {
-  const [data, setData] = useState([
-    {
-      intentName: 'Greeting Intent',
-      utterances: ['Hi', 'Hello', 'Hey', 'Good morning', 'Good afternoon'],
-      intentType: 'FAQ',
-      answers: ['Hello!', 'Hi there!'],
-    },
-    {
-      intentName: 'Weather Inquiry',
-      utterances: [
-        "What's the weather",
-        'How hot is it',
-        'Is it going to rain',
-      ],
-      intentType: 'Flow',
-      flowFile: {
-        content: 'Dummy Flow Content for Weather Inquiry',
-        isValidated: true,
-      },
-    },
-    {
-      intentName: 'Booking Intent',
-      utterances: ['Book a ticket', 'Reserve a seat', 'I want to book a hotel'],
-      intentType: 'Flow',
-      flowFile: {
-        content: 'Dummy Flow Content for Booking Intent',
-        isValidated: false,
-      },
-    },
-    {
-      intentName: 'Help Intent',
-      utterances: ['Help', 'Support', 'Can you assist me'],
-      intentType: 'FAQ',
-      answers: ['How can I assist you today?', 'I am here to help!'],
-    },
-  ]);
+  const [data, setData] = useState([]);
   const [editMode, setEditMode] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [currentIntent, setCurrentIntent] = useState({
@@ -45,8 +14,26 @@ const SetupNlp = ({userDetails, goToHome}) => {
     intentType: '',
     utterances: [],
   });
+  const [deleteIntentId, setDeleteIntentId] = useState(null);
 
-  const handleAddIntent = () => {
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await axios.get('/api/getAllIntents', {
+          headers: {
+            Authorization: `Bearer ${userDetails.token}`,
+          },
+        });
+        setData(response.data);
+      } catch (error) {
+        console.error('Error fetching data', error);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  const handleAddIntent = async () => {
     if (!currentIntent.intentType || !currentIntent.intentName) {
       return;
     }
@@ -55,15 +42,25 @@ const SetupNlp = ({userDetails, goToHome}) => {
 
     if (currentIntent.intentType === 'Flow') {
       modifiedIntent.flowFile = {
-        content: '',
+        content: '  ',
         isValidated: false,
       };
     } else {
       modifiedIntent.answers = [];
     }
 
-    setData([...data, modifiedIntent]);
-    setShowModal(false);
+    try {
+      const response = await axios.post('/api/createIntent', modifiedIntent, {
+        headers: {
+          Authorization: `Bearer ${userDetails.token}`,
+        },
+      });
+
+      setData([...data, response.data]);
+      setShowModal(false);
+    } catch (error) {
+      console.error('Error creating intent', error);
+    }
   };
 
   const handleEditIntent = (index) => {
@@ -71,12 +68,57 @@ const SetupNlp = ({userDetails, goToHome}) => {
     setEditMode(true);
   };
 
+  const handleSaveIntent = (intent) => {
+    axios
+      .put(`/api/modifyIntent/${intent._id}`, intent, {
+        headers: {
+          Authorization: `Bearer ${userDetails.token}`,
+        },
+      })
+      .then(() => {
+        axios
+          .get('/api/getAllIntents', {
+            headers: {
+              Authorization: `Bearer ${userDetails.token}`,
+            },
+          })
+          .then((response) => {
+            setData(response.data);
+          })
+          .catch((error) => {
+            console.error('Error fetching intents:', error);
+          });
+      })
+      .catch((error) => {
+        console.error('Error updating intent:', error);
+      });
+  };
+
+  const confirmDeleteIntent = () => {
+    axios
+      .delete(`/api/deleteIntent`, {
+        headers: {
+          Authorization: `Bearer ${userDetails.token}`,
+        },
+        data: {_id: deleteIntentId},
+      })
+      .then(() => {
+        setData(data.filter((intent) => intent._id !== deleteIntentId));
+        setDeleteIntentId(null);
+      })
+      .catch((error) => {
+        console.error('Error deleting intent:', error);
+        setDeleteIntentId(null);
+      });
+  };
+
   return (
     <div className='p-6'>
       {editMode ? (
         <IntentEditor
           intent={currentIntent}
-          handleCancel={() => setEditMode(false)}
+          handleClose={() => setEditMode(false)}
+          handleSave={handleSaveIntent}
         />
       ) : (
         <>
@@ -103,36 +145,33 @@ const SetupNlp = ({userDetails, goToHome}) => {
             </button>
           </div>
           <table className='w-full bg-white rounded-lg overflow-hidden shadow-lg'>
-            <thead className='bg-gray-100'>
+            <thead className='bg-gray-800'>
               <tr>
-                <th className='py-3 px-4 text-gray-700  font-medium text-left'>
+                <th className='py-3 px-4 text-gray-100 font-medium text-left'>
                   Intent Name
                 </th>
-                <th className='py-3 px-4 text-gray-700  font-medium text-left'>
+                <th className='py-3 px-4 text-gray-100 font-medium text-left'>
                   Intent Type
                 </th>
-                <th className='py-3 px-4 text-gray-700  font-medium text-left'></th>
-                <th className='py-3 px-4 text-gray-700  font-medium text-left'></th>
-                <th className='py-3 px-4 text-gray-700  font-medium text-left'></th>
+                <th className='py-3 px-4 text-gray-100 font-medium text-left'></th>
+                <th className='py-3 px-4 text-gray-100 font-medium text-left'></th>
+                <th className='py-3 px-4 text-gray-100 font-medium text-left'></th>
+                <th className='py-3 px-4 text-gray-100 font-medium text-left'></th>
               </tr>
             </thead>
             <tbody>
               {data.map((item, index) => (
                 <tr
                   key={index}
-                  className={index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}>
-                  <td className='py-2 px-4  text-gray-900'>
-                    {item.intentName}
-                  </td>
-                  <td className='py-2 px-4  text-gray-900'>
-                    {item.intentType}
-                  </td>
-                  <td className='py-2 px-4  text-gray-900'>
+                  className={index % 2 === 0 ? 'bg-gray-100' : 'bg-white'}>
+                  <td className='py-2 px-4 text-gray-900'>{item.intentName}</td>
+                  <td className='py-2 px-4 text-gray-900'>{item.intentType}</td>
+                  <td className='py-2 px-4 text-gray-900'>
                     {item.utterances?.length > 0
                       ? `${item.utterances.length} x Utterances`
                       : '0 x Utterance'}
                   </td>
-                  <td className='py-2 px-4  text-gray-900 flex items-center space-x-2'>
+                  <td className='py-2 px-4 text-gray-900'>
                     {item.intentType === 'Flow' ? (
                       <>
                         Flow File
@@ -150,11 +189,19 @@ const SetupNlp = ({userDetails, goToHome}) => {
                       </>
                     )}
                   </td>
-
-                  <td className='py-2 pl-4  text-gray-900'>
+                  <td className='py-2 text-gray-900'>
                     <button
-                      className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded'
+                      className='group bg-red-500 text-white font-bold py-2 px-4 rounded-full transition duration-300 ease-in-out hover:bg-red-700 flex items-center'
+                      onClick={() => setDeleteIntentId(item._id)}>
+                      <TrashIcon className='w-5 h-5 text-white group-hover:text-red-300 mr-2 transition duration-300 ease-in-out' />
+                      Delete
+                    </button>
+                  </td>
+                  <td className='py-2 text-gray-900 '>
+                    <button
+                      className='group bg-blue-500 text-white font-bold py-2 px-4 rounded-full transition duration-300 ease-in-out hover:bg-blue-700 flex items-center'
                       onClick={() => handleEditIntent(index)}>
+                      <PencilSquareIcon className='w-5 h-5 text-white group-hover:text-blue-300 mr-2 transition duration-300 ease-in-out' />
                       Edit
                     </button>
                   </td>
@@ -236,6 +283,16 @@ const SetupNlp = ({userDetails, goToHome}) => {
             </div>
           </div>
         </div>
+      )}
+      {deleteIntentId && (
+        <ConfirmActionModal
+          action='delete'
+          actionText='Are you sure you want to delete this intent? This action cannot be undone.'
+          handleYes={confirmDeleteIntent}
+          handleNo={() => {
+            setDeleteIntentId(null);
+          }}
+        />
       )}
     </div>
   );

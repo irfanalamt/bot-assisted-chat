@@ -1,14 +1,9 @@
-import {useState, useEffect} from 'react';
+import {useState} from 'react';
 import {TrashIcon} from '@heroicons/react/24/solid';
 
-const IntentEditor = ({intent, handleCancel}) => {
-  const [utterances, setUtterances] = useState([]);
-  const [answers, setAnswers] = useState([]);
-
-  useEffect(() => {
-    setUtterances(intent.utterances);
-    setAnswers(intent.answers);
-  }, [intent]);
+const IntentEditor = ({intent, handleClose, handleSave, handleDelete}) => {
+  const [utterances, setUtterances] = useState(intent.utterances);
+  const [answers, setAnswers] = useState(intent.answers ?? []);
 
   const addNewUtterance = () => {
     setUtterances([...utterances, '']);
@@ -38,6 +33,14 @@ const IntentEditor = ({intent, handleCancel}) => {
   const deleteAnswer = (index) => {
     const updatedAnswers = answers.filter((_, i) => i !== index);
     setAnswers(updatedAnswers);
+  };
+
+  const getIntentInFormat = () => ({...intent, answers, utterances});
+
+  const saveAndClose = () => {
+    const modifiedIntent = getIntentInFormat();
+    handleSave(modifiedIntent);
+    handleClose();
   };
 
   return (
@@ -103,12 +106,12 @@ const IntentEditor = ({intent, handleCancel}) => {
       <div className='flex gap-4 mt-6'>
         <button
           className='flex-1 bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-2 px-4 rounded-lg transition duration-300'
-          onClick={handleCancel}>
+          onClick={handleClose}>
           Cancel
         </button>
         <button
           className='flex-1 bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded-lg transition duration-300'
-          onClick={handleCancel}>
+          onClick={saveAndClose}>
           Save
         </button>
       </div>
