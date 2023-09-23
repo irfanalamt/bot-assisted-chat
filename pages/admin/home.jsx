@@ -5,6 +5,7 @@ import {decode} from '../../utils/cipher';
 import ManageAdmins from '../../components/ManageAdmins';
 import ManageAgents from '../../components/ManageAgents';
 import SetupNlp from '../../components/SetupNlp';
+import TestBot from '../../components/TestBot';
 
 const Home = () => {
   const router = useRouter();
@@ -38,9 +39,9 @@ const Home = () => {
   return (
     <div className='min-h-screen flex flex-col bg-gray-100'>
       <TopBar userDetails={userDetails} handleLogout={handleLogout} />
-      <div className='flex-grow p-6 '>
+      <div className='flex-grow p-6'>
         {!currentMode && (
-          <div className='grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8'>
+          <div className='grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8 '>
             {userDetails?.role === 'clientAdmin' && (
               <div
                 className='bg-white p-6 rounded-lg shadow text-center hover:shadow-lg transition duration-100 hover:bg-sky-100 cursor-pointer'
@@ -70,6 +71,11 @@ const Home = () => {
                 Setup CSS Files
               </h2>
             </div>
+            <div
+              className='bg-white p-6 rounded-lg shadow text-center hover:shadow-lg transition duration-300 hover:bg-sky-100 cursor-pointer'
+              onClick={() => setCurrentMode('testBot')}>
+              <h2 className='text-xl font-bold text-gray-800'>Test Chatbot</h2>
+            </div>
           </div>
         )}
         {currentMode === 'manageAdmins' && (
@@ -85,15 +91,19 @@ const Home = () => {
           />
         )}
         {currentMode === 'setupNlp' && (
-          <>
-            <SetupNlp
-              userDetails={userDetails}
-              goToHome={() => setCurrentMode(null)}
-            />
-          </>
+          <SetupNlp
+            userDetails={userDetails}
+            goToHome={() => setCurrentMode(null)}
+          />
         )}
         {currentMode === 'setupCss' && (
           <h2 className='text-3xl text-center'>Setup CSS Files</h2>
+        )}
+        {currentMode === 'testBot' && (
+          <TestBot
+            userDetails={userDetails}
+            goToHome={() => setCurrentMode(null)}
+          />
         )}
       </div>
     </div>
