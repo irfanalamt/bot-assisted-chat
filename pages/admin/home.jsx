@@ -1,35 +1,16 @@
 import {useRouter} from 'next/router';
-import {useEffect, useState} from 'react';
-import TopBar from '../../components/TopBar';
-import {decode} from '../../utils/cipher';
+import {useState} from 'react';
 import ManageAdmins from '../../components/ManageAdmins';
 import ManageAgents from '../../components/ManageAgents';
 import SetupNlp from '../../components/SetupNlp';
 import TestBot from '../../components/TestBot';
+import TopBar from '../../components/TopBar';
+import useAuth from '../../hooks/useAuth';
 
 const Home = () => {
   const router = useRouter();
-  const [userDetails, setUserDetails] = useState(null);
   const [currentMode, setCurrentMode] = useState(null);
-
-  useEffect(() => {
-    const authData = localStorage.getItem('authData');
-
-    if (!authData) {
-      router.replace('/');
-      return;
-    }
-
-    try {
-      const {role, token, name, clientId} = JSON.parse(
-        decode(authData, process.env.NEXT_PUBLIC_AUTH_KEY)
-      );
-      setUserDetails({role, token, name, clientId});
-    } catch (error) {
-      console.error('Failed to parse auth data', error);
-      router.replace('/');
-    }
-  }, []);
+  const {userDetails} = useAuth();
 
   function handleLogout() {
     localStorage.clear();
